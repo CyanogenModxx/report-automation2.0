@@ -1,0 +1,61 @@
+<html>
+    <head>
+      {% if title %}
+      <title>{{ title }} -Report Automation</title>
+      {% else %}
+      <title>Welcome to Report Automation</title>
+      {% endif %}
+    </head>
+    <body>
+        <div>
+            <ul>
+            
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            {% if current_user.is_anonymous %}
+            <li><a href="{{ url_for('login') }}">Login</a></li>
+            {% else %}
+            <li style="float: right;"><a class="active" href="{{ url_for('logout') }}">Logout</a></li>
+            <li><a href="{{ url_for('site_Data_to_front') }}">历月数据</a></li>
+            <li><a href="{{ url_for('get_current_month_data') }}">过去30天数据</a></li>
+            {% endif %}
+            </ul>
+        </div>
+        <hr>
+        {% block content %}{% endblock %}
+    </body>
+<style>
+ul{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 9999;
+}
+li{
+    display: inline;
+    float: left;
+
+}
+li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+li a:hover:not(.active) {
+    background-color: #111;
+}
+.active {
+    background-color: #4CAF50;
+}
+</style>
+            
+</html>
+
+
+

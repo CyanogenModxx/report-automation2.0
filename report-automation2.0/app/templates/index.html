@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+.center
+{
+        text-align: center;
+        font: arial ;
+}
+</style>
+<div style="padding:20px;margin-top:30px;height:1500px;">
+    <h1 style="text-align: center;">Hi, {{ current_user.username }}!</h1>
+    {% for post in posts %}
+        <h2 class="center"><b>{{ post.name }}</b></h2>
+        <div class="center">
+        <p>    <b>{{ post.one }}</b></p>
+        <p>    <b>{{ post.two }}</b></p>
+        <p>    <b>{{ post.three }}</b></p>
+        <p>    <b>{{ post.four }}</b></p>
+        <p>    <b>{{ post.five }}</b></p>
+        <p>    <b>{{ post.six }}</b></p>
+        <p>    <b>{{ post.seven }}</b></p>
+        <p>    <b>{{ post.eight }}</b></p>
+        <p>    <b>{{ post.nine }}</b></p>
+        <p>    <b>{{ post.ten }}</b></p>
+        <p>    <b>{{ post.eleven }}</b></p>
+        <p>   <b>{{ post.twelve }}</b></p>
+        <p>    <b>{{ post.thirteen }}</b></p>
+        <p>    <b>{{ post.fourteen }}</b></p>
+        <p>    <b>{{ post.fifteen }}</b></p>
+        <p>    <b>{{ post.sixteen }}</b></p>
+        <p>    <b>{{ post.seventeen }}</b></p>
+        <p>    <b>{{ post.eighteen }}</b></p>
+        <p>    <b>{{ post.nineteen }}</b></p>
+        <p>    <b>{{ post.author }}</b></p>
+        </div>    
+</div>
+    {% endfor %}
+{% endblock %}
+

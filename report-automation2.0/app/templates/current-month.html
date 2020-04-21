@@ -1,0 +1,884 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Data-monitoring</title>
+     <!-- 引入 ECharts 文件 -->
+    <script src="{{url_for('static',filename='echarts/dist/echarts-en.min.js')}}"></script>
+    <script src="{{url_for('static',filename='jquery-3.1.1.js')}}"></script>
+</head>
+
+<style>
+.abc tr{
+    text-align: center;
+}
+.abc tr th{
+    text-align: center;
+}
+.abc tr td{
+    text-align: center;
+}
+.s-list{
+    margin:20px 0;
+}
+.sitename{
+    width: 160px;
+    height: 36px;
+    margin-right: 20px;
+}
+.chooseSite{
+    height: 36px;
+}
+.dropbtn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+}
+
+.dropdown {
+    position: fixed;
+    top:50px;
+    left:5px;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 100px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {background-color: #f1f1f1}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown:hover .dropbtn {
+    background-color: #3e8e41;
+}
+</style>
+
+<div class="dropdown">
+    <button class="dropbtn">选择网站</button>
+    <div class="dropdown-content">
+    <a  href="/report/current-month/?sitename=allsite">Allsites</a>
+    <a  href="/report/current-month/?sitename=es">ES</a>
+    <a  href="/report/current-month/?sitename=gg">GG</a>
+    <a  href="/report/current-month/?sitename=gj">GJ</a>
+    <a  href="/report/current-month/?sitename=mj">MJ</a> 
+    <a  href="/report/current-month/?sitename=sd">SD</a> 
+    <a  href="/report/current-month/?sitename=bs">BS</a>
+    </div>
+</div>
+
+
+
+
+<script>
+    var options=$("#sitename");
+    var sitename =  '{{sitename}}'
+    if (sitename !== 'None') {
+        options.val('{{sitename}}')
+    } else {
+        options.val('allsite')
+    }
+    // 下面的函数用来返回平均值与数组最大值中的最大值，然后最大值*1.1作为最大刻度
+    function set_ticks(v1,v2){
+        mid = Math.max.apply(null,v2)
+        if (v1>=mid){
+            x = Math.round(v1*1.1)
+        } else {
+            x = Math.round(mid*1.1)
+        }
+        return x
+           
+    }
+</script>
+
+<div id="users" style="width: 1000px;height:400px;margin: 50px auto;top: 30px;"></div>
+<script type="text/javascript">
+    
+    var usersChart = echarts.init(document.getElementById("users"),'dark');
+    var user_avg = {{user_avg|safe}}
+    var user_alert_value ={{user_alert_value|safe}}
+    var user_date ={{user_date|safe}}
+    var user ={{user|safe}}
+    var user_tick = set_ticks(user_avg,user)
+    
+
+    var option1 = { 
+        backgroundColor: '#404a59',
+        title:{
+            text:'过去30天每日用户数',
+            x:'center'
+        },
+        legend:{show:true,left:'center',y:'7%'},
+        tooltip: { 
+            trigger: 'axis'
+            , axisPointer: { animation: true }
+        },
+        // axisPointer: { link: {xAxisIndex: 'all'} },
+        xAxis:[ { type : 'category', data: user_date }],
+        yAxis:{
+            max:user_tick,
+            splitLine:{
+                show:false
+            }
+        },
+        series:
+            {name:'每日用户数',
+            type:'line',
+            color:'#80F1BE',
+            label:{normal:{show:'true'}},
+            data:user,
+            markLine:
+                {data:[
+                        {symbol:'none',
+		            	label:{
+		            		position:"middle",
+		            		formatter:'{b}'
+                        },
+                        
+                            name:"2019年平均值-标准差",
+                            yAxis:user_alert_value,
+		            		lineStyle:{
+			            		color:"#dd4444"
+			            	}
+                        },
+                        {symbol:'none',
+		            	label:{
+		            		position:"middle",
+		            		formatter:'{b}'
+                        },
+                        
+                            name:"2019年平均值",
+                            color:"#fec42c",
+                            yAxis:user_avg,
+		            		lineStyle:{
+			            		color:"#fec42c"
+			            	}
+                        }
+                    ]
+		            }
+                }
+        
+        
+    };
+    // 使用刚指定的配置项和数据显示图表。
+    usersChart.setOption(option1);  
+</script>
+
+<div id="reg" style="width: 1000px;height:400px;margin: 20px auto;"></div>
+<script type="text/javascript">
+    var regChart = echarts.init(document.getElementById("reg"),'dark');
+    var register_alert ={{register_alert|safe}}
+    var sign_up_date ={{sign_up_date|safe}}
+    var sign_up_user ={{sign_up_user|safe}}
+    var register_avg = {{register_avg|safe}}
+    var reg_tick = set_ticks(register_avg,sign_up_user)
+    
+
+    var option2 = { 
+        backgroundColor: '#404a59',
+        title:{
+            text:'过去30天每日注册用户数',
+            x:'center'
+        },
+        legend:{show:true,left:'center',y:'7%'},
+        tooltip: { 
+            trigger: 'axis'
+            , axisPointer: { animation: true }
+        },
+        axisPointer: { link: {xAxisIndex: 'all'} },
+        xAxis:[ { type : 'category', data: sign_up_date }],
+        yAxis: {
+            max:reg_tick,
+            splitLine:{
+                show:false
+            }
+            }, 
+        series:
+            {name:'每日注册用户数',
+            color:'#80F1BE',
+            type:'line',
+            label:{normal:{show:'true'}},
+            data:sign_up_user,
+            markLine:
+                {data:[
+                        {symbol:'none',
+		            	label:{
+		            		position:"middle",
+		            		formatter:'{b}'
+                        },
+                        
+                            name:"2019年平均值-标准差",
+                            yAxis:register_alert,
+		            		lineStyle:{
+			            		color:"#dd4444"
+			            	}
+                        },
+                        {symbol:'none',
+		            	label:{
+		            		position:"middle",
+		            		formatter:'{b}'
+                        },
+                        
+                            name:"2019年平均值",
+                            yAxis:register_avg,
+		            		lineStyle:{
+			            		color:"#fec42c"
+			            	}
+                        }
+                    ]
+		            }
+                }
+        
+        
+    };
+    // 使用刚指定的配置项和数据显示图表。
+    regChart.setOption(option2);  
+</script>
+
+<div id="order" style="width: 1000px;height:400px;margin: 20px auto;" ></div>
+<script type="text/javascript">
+    var orderChart = echarts.init(document.getElementById("order"),'dark');
+    var order_alert ={{order_alert|safe}}
+    var current_month ={{current_month|safe}}
+    var current_month_order ={{current_month_order|safe}}
+    var  order_avg = {{order_avg|safe}}
+    var order_tick = set_ticks(order_avg,current_month_order)
+
+    
+
+    var option3 = { 
+        backgroundColor: '#404a59',
+        title:{
+            text:'过去30天每日订单（包含未支付）',
+            x:'center'
+        },
+        legend:{show:true,left:'center',y:'7%'},
+        tooltip: { 
+            trigger: 'axis'
+            , axisPointer: { animation: true }
+        },
+        axisPointer: { link: {xAxisIndex: 'all'} },
+        xAxis:[ { type : 'category', data: current_month }],
+        yAxis: {
+            max:order_tick,
+            splitLine:{
+                show:false
+            }
+        }, 
+        series:
+            {name:'每日订单',
+            color:'#80F1BE',
+            type:'line',
+            label:{normal:{show:'true'}},
+            data:current_month_order,
+            markLine:
+                {data:[
+                        {symbol:'none',
+		            	label:{
+		            		position:"middle",
+		            		formatter:'{b}'
+                        },
+                        
+                            name:"2019年平均值-标准差",
+                            yAxis:order_alert,
+		            		lineStyle:{
+			            		color:"#dd4444"
+			            	}
+                        },
+                        {symbol:'none',
+		            	label:{
+		            		position:"middle",
+		            		formatter:'{b}'
+                        },
+                        
+                            name:"2019年平均值",
+                            yAxis:order_avg,
+		            		lineStyle:{
+			            		color:"#fec42c"
+			            	}
+                        }
+                    ]
+		            }
+                }
+        
+        
+    };
+    // 使用刚指定的配置项和数据显示图表。
+    orderChart.setOption(option3);  
+</script>
+
+<div id="paidorder" style="width: 1000px;height:400px;margin: 20px auto;"></div>
+<script type="text/javascript">
+    var paidorderChart = echarts.init(document.getElementById("paidorder"),'dark');
+    var paidorder_alert ={{paidorder_alert|safe}}
+    var current_month_paid ={{current_month_paid|safe}}
+    var current_month_paidorder ={{current_month_paidorder|safe}}
+    var paidorder_avg = {{paidorder_avg|safe}}
+    var paidorder_tick = set_ticks(paidorder_avg,current_month_paidorder)
+
+    var option4 = { 
+        backgroundColor: '#404a59',
+        title:{
+            text:'过去30天每日订单（已支付）',
+            x:'center'
+        },
+        legend:{show:true,left:'center',y:'7%'},
+        tooltip: { 
+            trigger: 'axis'
+            , axisPointer: { animation: true }
+        },
+        axisPointer: { link: {xAxisIndex: 'all'} },
+        xAxis:[ { type : 'category', data: current_month_paid }],
+        yAxis: {
+            max:paidorder_tick,
+            splitLine:{
+                show:false
+            }
+            }, 
+        series:
+            {name:'每日订单',
+            color:'#80F1BE',
+            type:'line',
+            label:{normal:{show:'true'}},
+            data:current_month_paidorder,
+            markLine:
+                {data:[
+                        {symbol:'none',
+		            	label:{
+		            		position:"middle",
+		            		formatter:'{b}'
+                        },
+                        
+                            name:"2019年平均值-标准差",
+                            yAxis:paidorder_alert,
+		            		lineStyle:{
+			            		color:"#dd4444"
+			            	}
+                        },
+                        {symbol:'none',
+		            	label:{
+		            		position:"middle",
+		            		formatter:'{b}'
+                        },
+                        
+                            name:"2019年平均值",
+                            yAxis:paidorder_avg,
+		            		lineStyle:{
+			            		color:"#fec42c"
+			            	}
+                        }]
+		            }
+                }
+        
+        
+    };
+    // 使用刚指定的配置项和数据显示图表。
+    paidorderChart.setOption(option4);  
+</script>
+
+<div id="payrate" style="width: 1000px;height:400px;margin: 20px auto;"></div>
+<script type="text/javascript">
+    var payrateChart = echarts.init(document.getElementById("payrate"),'dark');
+    var paid_month ={{paid_month|safe}}
+    var current_payrate = {{current_payrate|safe}}
+    
+
+    var option5 = { 
+        backgroundColor: '#404a59',
+        title:{
+            text:'过去30天每日支付成功率）',
+            x:'center'
+        },
+        legend:{show:true,left:'center',y:'7%'},
+        tooltip: { 
+            trigger: 'axis'
+            , axisPointer: { animation: true }
+        },
+        axisPointer: { link: {xAxisIndex: 'all'} },
+        xAxis:[ { type : 'category', data: paid_month }],
+        yAxis: {
+            splitLine:{
+                show:false
+            }
+        }, 
+        series:
+            {name:'每日支付成功率',
+            color:'#80F1BE',
+            type:'bar',
+            label:{normal:{show:'true',position:'top'}},
+            data:current_payrate,
+            
+                }
+        
+        
+    };
+    // 使用刚指定的配置项和数据显示图表。
+    payrateChart.setOption(option5);  
+</script>
+
+<div id="sales" style="width: 1000px;height:400px;margin: 20px auto;"></div>
+<script type="text/javascript">
+    var salesChart = echarts.init(document.getElementById("sales"),'dark');
+    var sales_alert ={{sales_alert|safe}}
+    var current_sales_date ={{current_sales_date|safe}}
+    var current_month_sales ={{current_month_sales|safe}}
+    var sales_avg = {{sales_avg|safe}}
+    var sales_tick = set_ticks(sales_avg,current_month_sales)
+    
+
+    var option6 = { 
+        backgroundColor: '#404a59',
+        title:{
+            text:'过去30天每日销售额',
+            x:'center'
+        },
+        legend:{show:true,left:'center',y:'7%'},
+        tooltip: { 
+            trigger: 'axis'
+            , axisPointer: { animation: true }
+        },
+        axisPointer: { link: {xAxisIndex: 'all'} },
+        xAxis:[ { type : 'category', data: current_sales_date }],
+        yAxis: {
+            max:sales_tick,
+            splitLine:{
+                show:false
+            }
+            }, 
+        series:
+            {name:'每日销售额',
+            color:'#80F1BE',
+            type:'line',
+            label:{normal:{show:'true'}},
+            data:current_month_sales,
+            markLine:
+                {data:[
+                        {symbol:'none',
+		            	label:{
+		            		position:"middle",
+		            		formatter:'{b}'
+                        },
+                        
+                            name:"2019年平均值-标准差", 
+                            yAxis:sales_alert,
+		            		lineStyle:{
+			            		color:"#dd4444"
+			            	}
+                        },
+                        {symbol:'none',
+		            	label:{
+		            		position:"middle",
+		            		formatter:'{b}'
+                        },
+                        
+                            name:"2019年平均值",
+                            yAxis:sales_avg,
+		            		lineStyle:{
+			            		color:"#fec42c"
+			            	}
+                        }]
+		            }
+                }
+        
+        
+    };
+    // 使用刚指定的配置项和数据显示图表。
+    salesChart.setOption(option6);  
+</script>
+
+<div id="rank" style="width: 1000px;height:800px;margin: 20px auto;"></div>
+<script type="text/javascript">
+    var rankChart = echarts.init(document.getElementById("rank"),'light');
+    var product = {{product|safe}}
+    var amount = {{amount|safe}}
+    
+    var option10 = {
+        
+        title:{
+            text:'畅销商品排行（过去30天累计）',
+            x:'center',
+            y:'top'
+        },
+        yAxis:{
+            
+            type:'category',
+            inverse:true,
+            data:product,
+            splitLine:{
+                show:false
+            }
+        },
+        xAxis:{
+            name:'销量/件',
+            type:'value',
+            splitLine:{
+                show:false
+            }
+        },
+        tooltip:{
+            trigger:'item',
+            axisPointer: {
+            type: 'shadow'
+            }
+        },
+        grid:{
+            show:false,
+            left:'50%'
+        },
+
+        series:{
+            type:'bar',
+            label: {
+                normal: {
+                    show: true,
+                    position: 'right'
+                }
+            },
+            data:amount,
+            itemStyle:{
+                color:{
+                    type:'liner',
+                    x:0,
+                    y:0,
+                    x2:0,
+                    y2:1,
+                    colorStops: [{
+                        offset: 0, 
+                        color: '#2f4554' // 0% 处的颜色
+                                }, {
+                        offset: 1, color: '#c23531' // 100% 处的颜色
+                                }],
+                        global: false // 缺省为 false
+                }
+            }
+            
+        }
+    }
+
+   rankChart.setOption(option10)
+</script>
+
+<div id="payment" style="width: 1000px;height:800px;margin: 20px auto;"></div>
+<script type="text/javascript">
+    var paymentChart = echarts.init(document.getElementById("payment"),'dark');
+    var payment = {{payment|safe}}
+    var date = {{date|safe}}
+    var all_payment0 = {{all_payment0|safe}}
+    var all_payment1 = {{all_payment1|safe}}
+    var all_payment2 = {{all_payment2|safe}}
+    var all_payment3 = {{all_payment3|safe}}
+    var all_payment4 = {{all_payment4|safe}}
+    var paid_payment0 = {{paid_payment0|safe}}
+    var paid_payment1 = {{paid_payment1|safe}}
+    var paid_payment2 = {{paid_payment2|safe}}
+    var paid_payment3 = {{paid_payment3|safe}}
+    var paid_payment4 = {{paid_payment4|safe}}
+    
+    option7 = {
+    backgroundColor: '#404a59',
+    title:{
+        text:'各支付方式的使用情况',
+        x:'center',
+        y:'top'
+    },
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            type: 'shadow'
+        }
+        
+    },
+    legend: {
+        left:'center',
+        y:'5%'
+    },
+    toolbox: {
+        show: true,
+        orient: 'vertical',
+        left: 'right',
+        top: 'center',
+        // feature: {
+        //     mark: {show: true},
+        //     dataView: {show: true, readOnly: false},
+        //     magicType: {show: true, type: ['line', 'bar', 'stack', 'tiled']},
+        //     restore: {show: true},
+        //     saveAsImage: {show: true}
+        }
+    ,
+    
+    xAxis: [
+        {   
+            name:'日期',
+            gridIndex:0,
+            type: 'category',
+            axisTick: {show: false},
+            data: date
+        }, 
+        {   
+            name:'日期',
+            gridIndex:1,
+            type: 'category',
+            axisTick: {show: false},
+            data: date
+        }
+    ],
+    yAxis: [
+        {   name:'支付成功订单/笔',
+            type: 'value',
+            gridIndex:0,
+            splitLine:{
+                show:false
+            }
+        },
+        {   
+            name:'总订单/笔',
+            type: 'value',
+            gridIndex:1,
+            splitLine:{
+                show:false
+            }
+        }
+    ],
+    grid: [
+        {bottom: '55%'},
+        {top: '55%'}
+        ],
+    dataZoom: [  
+        { xAxisIndex: [0, 1]},
+        { show: true } 
+        ],
+    series: [
+        {
+            name: payment[0],
+            type: 'bar',
+            barGap: 0,
+            data:paid_payment0,
+            xAxisIndex:0,
+            yAxisIndex:0,
+            
+
+        },
+        {
+            name: payment[1],
+            type: 'bar',
+            barGap: 0,
+            data:paid_payment1,
+            xAxisIndex:0,
+            yAxisIndex:0
+
+        },
+        {
+            name: payment[2],
+            type: 'bar',
+            barGap: 0,
+            data:paid_payment2,
+            xAxisIndex:0,
+            yAxisIndex:0
+        },
+        {
+            name: payment[3],
+            type: 'bar',
+            barGap: 0,
+            data:paid_payment3,
+            xAxisIndex:0,
+            yAxisIndex:0
+        },
+        {
+            name: payment[4],
+            type: 'bar',
+            barGap: 0,
+            data:paid_payment4,
+            xAxisIndex:0,
+            yAxisIndex:0
+        },
+        {
+            name: payment[0],
+            type: 'bar',
+            barGap: 0,
+            data:all_payment0,
+            xAxisIndex:1,
+            yAxisIndex:1
+        },
+        {
+            name: payment[1],
+            type: 'bar',
+            barGap: 0,
+            data:all_payment1,
+            xAxisIndex:1,
+            yAxisIndex:1
+        },
+        {
+            name: payment[2],
+            type: 'bar',
+            barGap: 0,
+            data:all_payment2,
+            xAxisIndex:1,
+            yAxisIndex:1
+        },
+        {
+            name: payment[3],
+            type: 'bar',
+            barGap: 0,
+            data:all_payment3,
+            xAxisIndex:1,
+            yAxisIndex:1
+        },
+        {
+            name: payment[4],
+            type: 'bar',
+            barGap: 0,
+            data:all_payment4,
+            xAxisIndex:1,
+            yAxisIndex:1
+        }
+    ]
+};
+    
+// 使用刚指定的配置项和数据显示图表。
+paymentChart.setOption(option7);  
+</script>
+
+
+<div style="width:1000px;display:flex;justify-content: space-around;margin: 20 auto;">
+    <div id="payment_percentage_A" style="width: 400px;height:400px;"></div>
+    <div id="payment_percentage_B" style="width: 400px;height:400px;"></div>
+</div>
+<script type="text/javascript">
+    var payAChart = echarts.init(document.getElementById("payment_percentage_A"),'light');
+    var columns = {{columns|safe}}
+    var order_data = {{order_data|safe}}
+
+    option8 = {
+    title:{
+            text:'总订单各支付方式占比',
+            x:'center',
+            y:'40%'
+        },
+    tooltip: {
+        trigger: 'item',
+        formatter: "{a} <br/>{b}: {c} ({d}%)"
+    },
+    legend: {
+        orient:'vertical',
+        x: 'left',
+        data:columns
+    },
+    series: [
+        {
+            name:'过去30天总订单各支付方式占比',
+            type:'pie',
+            radius: ['50%', '70%'],
+            avoidLabelOverlap: false,
+            label: {
+                normal: {
+                    show: false,
+                    position: 'center'
+                },
+                emphasis: {
+                    show: true,
+                    textStyle: {
+                        fontSize: '30',
+                        fontWeight: 'bold'
+                    }
+                }
+            },
+            labelLine: {
+                normal: {
+                    show: false
+                }
+            },
+            data:[
+                {value:order_data[0], name:columns[0]},
+                {value:order_data[1], name:columns[1]},
+                {value:order_data[2], name:columns[2]},
+                {value:order_data[3], name:columns[3]},
+                {value:order_data[4], name:columns[4]} 
+            ]
+        }
+    ]
+};
+    payAChart.setOption(option8);  
+
+</script>
+
+
+<script type="text/javascript">
+    var payBChart = echarts.init(document.getElementById("payment_percentage_B"),'light');
+    var columns = {{columns|safe}}
+    var paidorder_data = {{paidorder_data|safe}}
+
+    option9 = {
+    title:{
+            text:'支付成功订单各支付方式占比',
+            x:'center',
+            y:'40%'
+        },
+    tooltip: {
+        trigger: 'item',
+        formatter: "{a} <br/>{b}: {c} ({d}%)"
+    },
+    legend: {
+        orient:'vertical',
+        x: 'left',
+        data:columns
+    },
+    series: [
+        {
+            name:'过去30天支付成功订单各支付方式占比',
+            type:'pie',
+            radius: ['50%', '70%'],
+            avoidLabelOverlap: false,
+            label: {
+                normal: {
+                    show: false,
+                    position: 'center'
+                },
+                emphasis: {
+                    show: true,
+                    textStyle: {
+                        fontSize: '30',
+                        fontWeight: 'bold'
+                    }
+                }
+            },
+            labelLine: {
+                normal: {
+                    show: false
+                }
+            },
+            data:[
+                {value:paidorder_data[0], name:columns[0]},
+                {value:paidorder_data[1], name:columns[1]},
+                {value:paidorder_data[2], name:columns[2]},
+                {value:paidorder_data[3], name:columns[3]},
+                {value:paidorder_data[4], name:columns[4]}
+            ]
+        }
+    ]
+};
+    payBChart.setOption(option9);  
+
+</script>
+{% endblock %}

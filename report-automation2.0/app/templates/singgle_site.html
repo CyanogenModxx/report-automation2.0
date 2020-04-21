@@ -1,0 +1,834 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Data-monitoring</title>
+     <!-- 引入 ECharts 文件 -->
+    <script src="{{url_for('static',filename='echarts/dist/echarts-en.min.js')}}"></script>
+    <script src="{{url_for('static',filename='jquery-3.1.1.js')}}"></script>
+</head>
+<style>
+    .abc tr{
+        text-align: center;
+    }
+    .abc tr th{
+        text-align: center;
+    }
+    .abc tr td{
+        text-align: center;
+    }
+    .s-list{
+        margin:20px 0;
+    }
+    .sitename{
+        width: 160px;
+        height: 36px;
+        margin-right: 20px;
+    }
+    .chooseSite{
+        height: 36px;
+    }
+    .dropbtn {
+        background-color: #4CAF50;
+        color: white;
+        padding: 16px;
+        font-size: 16px;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .dropdown {
+        position: fixed;
+        top:50px;
+        left:5px;
+        display: inline-block;
+    }
+    
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        min-width: 100px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    }
+    
+    .dropdown-content a {
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+    }
+    
+    .dropdown-content a:hover {background-color: #f1f1f1}
+    
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+    
+    .dropdown:hover .dropbtn {
+        background-color: #3e8e41;
+    }
+    </style>
+    
+    <div class="dropdown">
+        <button class="dropbtn">选择网站</button>
+        <div class="dropdown-content">
+        <a  href="/report/history/?sitename=allsite">Allsites</a>
+        <a  href="/report/history/?sitename=es">ES</a>
+        <a  href="/report/history/?sitename=gg">GG</a>
+        <a  href="/report/history/?sitename=gj">GJ</a>
+        <a  href="/report/history/?sitename=mj">MJ</a> 
+        <a  href="/report/history/?sitename=sd">SD</a> 
+        <a  href="/report/history?sitename=bs">BS</a>
+        </div>
+    </div>
+    <div id="uns" style="width: 1600px;height:600px;margin: 0 auto;"></div>
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var unsChart = echarts.init(document.getElementById("uns"),'shine');
+        // 指定图表的配置项和数据
+        var site_users_byday ={{site_users_byday|safe}}
+        var site_newUsers_byday ={{site_newUsers_byday|safe}}
+        var site_sessions_byday ={{site_sessions_byday|safe}}
+        var site_date_byday ={{site_date_byday|safe}}
+    
+        var option1 = {
+            title:{
+                text:'每日用户数、新用户数、会话数',
+                x:'center'
+            },
+            legend:{show:true,left:'center',y:'7%'},
+            tooltip: { 
+                trigger: 'axis'
+                , axisPointer: { animation: true }
+            },
+            axisPointer: { link: {xAxisIndex: 'all'} },
+            xAxis:[ { type : 'category', data: site_date_byday }],
+            yAxis: {},
+            dataZoom: [  { show: true } ], 
+            series:[
+                {name:'新用户数',type:'line',label:{normal:{show:'true'}},data:site_newUsers_byday},
+                {name:'用户数',type:'line',label:{normal:{show:'true'}},data:site_users_byday},
+                {name:'会话数',type:'line',label:{normal:{show:'true'}},data:site_sessions_byday},
+    
+            ]
+        };
+    
+        // 使用刚指定的配置项和数据显示图表。
+        unsChart.setOption(option1);  
+    </script>
+
+    <div style="width:1600px;display:flex;justify-content: space-around;margin: 20 auto;">
+    <div id="salesChart" style="width:700px;height:600px;"></div>
+    <div id="payrate" style="width:700px;height:600px;"></div>
+    </div>
+
+    <script type="text/javascript">
+    var salesChart = echarts.init(document.getElementById("salesChart"),'shine');
+        // 指定图表的配置项和数据
+        var site_sales = JSON.parse('{{site_sales|safe}}')
+        var site_GMV = JSON.parse('{{site_GMV|safe}}')
+        var site_month_list = {{site_month_list|safe}}
+        var option2 =  {
+        title: {
+            text: '销售额和GMV',
+            subtext:'单位：美元',
+            x: 'center',
+            y: 0,
+            
+        },
+        
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'shadow',
+                label: {
+                    show: true,
+                        
+                }
+            }
+        },
+        legend: {
+            data: ['销售额','GMV'],
+            top:'7%',
+        },
+        grid:{
+            x:'12%',
+            width:'82%',
+            y:'12%',
+        },
+        xAxis: {
+            type: 'category',
+            data: site_month_list,
+            axisLabel:{
+                rotate:-45
+            },
+    
+            axisTick:{
+                show:true,
+            },
+        },
+        yAxis: [
+            {
+                type: 'value'
+            }
+        ],
+        
+        series: [
+        
+        {
+            name: '销售额',
+            type: 'bar',
+            data: site_sales,
+            label:{
+                normal:{
+                    show:true,
+                    position:'top',
+                    
+                }
+                
+            }
+
+
+
+
+
+        }, 
+        
+        {
+            name: 'GMV',
+            type: 'bar',
+            data: site_GMV,
+            label:{
+                normal:{
+                    show:true,
+                    position:'top',
+                    
+                }
+                
+            }
+        }, 
+       ]
+    };
+    
+    salesChart.setOption(option2)
+    </script>
+    
+    
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var payrateChart = echarts.init(document.getElementById("payrate"),'shine');
+        // 指定图表的配置项和数据
+        var site_order = JSON.parse('{{site_order|safe}}')
+        var site_paid_order = JSON.parse('{{site_paid_order|safe}}')
+        var site_paid_rate = JSON.parse('{{site_paid_rate|safe}}')
+        var site_month_list = {{site_month_list|safe}}
+        var option3 =  {
+        title: {
+            text: '总订单和支付成功订单',
+            subtext:'单位：笔',
+            x: 'center',
+            y: 0,
+            
+        },
+        
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'shadow',
+                label: {
+                    show: true,
+                    backgroundColor: '#7B7DDC'
+                }
+            }
+        },
+        legend: {
+            data: ['总订单', '支付成功订单','支付成功率',],
+            top:'7%',
+        },
+        grid:{
+            x:'12%',
+            width:'82%',
+            y:'12%',
+        },
+        xAxis: {
+            data: site_month_list,
+            axisTick:{
+                show:true,
+            },
+            axisLabel:{
+                rotate:-45
+            }
+        },
+        yAxis: [{
+    
+            splitLine: {show: false},
+            
+            axisLabel:{
+                formatter:'{value} ',
+            }
+        },
+            {
+    
+            splitLine: {show: false},
+            axisLabel:{
+                formatter:'{value} ',
+            }
+        }],
+        
+        series: [{
+            name: '支付成功率',
+            type: 'line',
+            yAxisIndex: 1,
+            data: site_paid_rate,
+            label:{
+                normal:{
+                    show:true,
+                    position:'top',
+                    
+                }
+                
+            }
+        }, 
+        
+        {
+            name: '支付成功订单',
+            type: 'bar',
+            label:{
+                normal:{
+                    show:true,
+                    position:'top',
+                    
+                }
+                
+            },
+            itemStyle: {
+                normal: {
+                    color: new echarts.graphic.LinearGradient(
+                        0, 0, 0, 1,
+                        [
+                            {offset: 0, color: '#956FD4'},
+                            {offset: 1, color: '#3EACE5'}
+                        ]
+                    )
+                }
+            },
+            data:site_paid_order
+        }, 
+        
+        {
+            name: '总订单',
+            type: 'bar',
+            barGap: '-100%',
+            label:{
+                normal:{
+                    show:true,
+                    position:'top',
+                    
+                }
+                
+            },
+            itemStyle: {
+                normal: {
+                    color: new echarts.graphic.LinearGradient(
+                        0, 0, 0, 1,
+                        [
+                            {offset: 0, color: 'rgba(156,107,211,0.5)'},
+                            {offset: 0.2, color: 'rgba(156,107,211,0.3)'},
+                            {offset: 1, color: 'rgba(156,107,211,0)'}
+                        ]
+                    )
+                }
+            },
+            z: -12,
+            
+            data: site_order
+        }, 
+       ]
+    };
+    // 使用刚指定的配置项和数据显示图表。
+    payrateChart.setOption(option3)
+    </script>
+
+    <div style="width:1600px;display:flex;justify-content: space-around;margin: 20 auto;">
+    <div id="traffic_source" style="width:700px;height:600px;margin: 0 auto;"></div>
+    <div id="register" style="width:700px;height:600px;margin: 0 auto;"></div>
+    </div>
+
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var traffic_source_Chart = echarts.init(document.getElementById("traffic_source"),'shine');
+        var site_source_dataset  = JSON.parse('{{site_source_dataset|tojson|safe}}')
+        setTimeout(function () {
+    
+    option4 = {
+        title: {
+            text: '流量来源',
+            subtext:'单位：人',
+            x: 'center',
+            y: 0,},
+        legend: {top:'7%'},
+        tooltip: {
+            trigger: 'axis',
+            showContent: true
+        },
+        dataset: {
+            source:site_source_dataset
+        },
+        xAxis: {
+            type: 'category',
+            axisLabel:{
+                rotate:-45
+            }
+            },
+        yAxis: {gridIndex: 0},
+        grid: {top: '55%'},
+        series: [
+            {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+            {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+            {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+            {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+            {
+                type: 'pie',
+                id: 'pie',
+                radius: '30%',
+                center: ['50%', '35%'],
+                label: {
+                    formatter: '{b}: {@2019-01} ({d}%)'
+                },
+                encode: {
+                    itemName: 'group',
+                    value: '2019-01',
+                    tooltip: '2019-01'
+                }
+            }
+        ]
+    };
+    
+    traffic_source_Chart.on('updateAxisPointer', function (event) {
+        var xAxisInfo = event.axesInfo[0];
+        if (xAxisInfo) {
+            var dimension = xAxisInfo.value + 1;
+            traffic_source_Chart.setOption({
+                series: {
+                    id: 'pie',
+                    label: {
+                        formatter: '{b}: {@[' + dimension + ']} ({d}%)'
+                    },
+                    encode: {
+                        value: dimension,
+                        tooltip: dimension
+                    }
+                }
+            });
+        }
+    });
+    
+    traffic_source_Chart.setOption(option4);
+    
+    });
+    </script>
+    
+    
+    
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var registerChart = echarts.init(document.getElementById("register"),'shine');
+        // 指定图表的配置项和数据
+        var site_new_Users = JSON.parse('{{site_new_Users|safe}}')
+        var site_register_users = JSON.parse('{{site_register_users|safe}}')
+        var site_register_rate = JSON.parse('{{site_register_rate|safe}}')
+        var site_register_month = {{site_register_month|safe}}
+        var option5 =  {
+        title: {
+            text: '注册用户数&注册率',
+            subtext:'单位：人',
+            x: 'center',
+            y: 0,
+            
+        },
+        
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'shadow',
+                label: {
+                    show: true,
+                    backgroundColor: '#7B7DDC'
+                }
+            }
+        },
+        legend: {
+            data: ['新用户数', '注册用户数','注册率',],
+            top:'7%',
+        },
+        grid:{
+            x:'12%',
+            width:'82%',
+            y:'12%',
+        },
+        xAxis: {
+            data: site_register_month,
+            axisLabel:{
+                rotate:-45
+            },
+            axisTick:{
+                show:true,
+            },
+        },
+        yAxis: [{
+    
+            splitLine: {show: false},
+            axisLabel:{
+                formatter:'{value} ',
+            }
+        },
+            {
+    
+            splitLine: {show: false},
+            axisLabel:{
+                formatter:'{value} ',
+            }
+        }],
+        
+        series: [{
+            name: '注册率',
+            type: 'line',
+            yAxisIndex: 1,
+            data: site_register_rate
+        }, 
+        
+        {
+            name: '注册用户数',
+            type: 'bar',
+            itemStyle: {
+                normal: {
+                    color: new echarts.graphic.LinearGradient(
+                        0, 0, 0, 1,
+                        [
+                            {offset: 0, color: '#956FD4'},
+                            {offset: 1, color: '#3EACE5'}
+                        ]
+                    )
+                }
+            },
+            data: site_register_users
+        }, 
+        
+        {
+            name: '新用户数',
+            type: 'bar',
+            barGap: '-100%',
+            itemStyle: {
+                normal: {
+                    color: new echarts.graphic.LinearGradient(
+                        0, 0, 0, 1,
+                        [
+                            {offset: 0, color: 'rgba(156,107,211,0.5)'},
+                            {offset: 0.2, color: 'rgba(156,107,211,0.3)'},
+                            {offset: 1, color: 'rgba(156,107,211,0)'}
+                        ]
+                    )
+                }
+            },
+            z: -12,
+            
+            data: site_new_Users
+        }, 
+       ]
+    };
+    // 使用刚指定的配置项和数据显示图表。
+    registerChart.setOption(option5)
+    </script>
+<div style="width:1600px;display:flex;justify-content: space-around;margin: 20 auto;">
+    <div id="activation" style="width:700px;height:600px;"></div>
+    <div>
+    <div id="paidorder_device" style="width:700px;height:300px;margin: 0 auto;"></div>
+    <div id="rate_device" style="width:700px;height:300px;margin: 0 auto;"></div>
+</div>
+    </div>
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var activationChart = echarts.init(document.getElementById("activation"),'shine');
+        // 指定图表的配置项和数据
+        var site_users = JSON.parse('{{site_users|safe}}')
+        var site_activate_users = JSON.parse('{{site_activate_users|safe}}')
+        var site_activate_rate = JSON.parse('{{site_activate_rate|safe}}')
+        var site_activate_month = {{site_activate_month|safe}}
+        var option6=  {
+        title: {
+            text: '活跃用户数&活跃度',
+            subtext:'单位：人',
+            x: 'center',
+            y: 0,
+            
+        },
+        
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'shadow',
+                label: {
+                    show: true,
+                    backgroundColor: '#7B7DDC'
+                }
+            }
+        },
+        legend: {
+            data: ['用户数', '活跃用户数','活跃度',],
+            top:'7%',
+        },
+        grid:{
+            x:'12%',
+            width:'82%',
+            y:'12%',
+        },
+        xAxis: {
+            data: site_activate_month,
+            axisTick:{
+                show:true,
+            },
+            axisLabel:{
+                rotate:-45
+            }
+        },
+        yAxis: [{
+    
+            splitLine: {show: false},
+            axisLabel:{
+                formatter:'{value} ',
+            }
+        },
+            {
+    
+            splitLine: {show: false},
+            axisLabel:{
+                formatter:'{value} ',
+            }
+        }],
+        
+        series: [{
+            name: '活跃度',
+            type: 'line',
+            yAxisIndex: 1,
+            data: site_activate_rate,
+            label:{
+                normal:{
+                    show:true,
+                    position:'top',
+                    
+                }
+                
+            }
+        }, 
+        
+        {
+            name: '活跃用户数',
+            type: 'bar',
+            label:{
+                normal:{
+                    show:true,
+                    position:'top',
+                    
+                }
+                
+            },
+            itemStyle: {
+                normal: {
+                    color: new echarts.graphic.LinearGradient(
+                        0, 0, 0, 1,
+                        [
+                            {offset: 0, color: '#956FD4'},
+                            {offset: 1, color: '#3EACE5'}
+                        ]
+                    )
+                }
+            },
+            data: site_activate_users
+        }, 
+        
+        {
+            name: '用户数',
+            type: 'bar',
+            barGap: '-100%',
+            label:{
+                normal:{
+                    show:true,
+                    position:'top',
+                    
+                }
+                
+            },
+            itemStyle: {
+                normal: {
+                    color: new echarts.graphic.LinearGradient(
+                        0, 0, 0, 1,
+                        [
+                            {offset: 0, color: 'rgba(156,107,211,0.5)'},
+                            {offset: 0.2, color: 'rgba(156,107,211,0.3)'},
+                            {offset: 1, color: 'rgba(156,107,211,0)'}
+                        ]
+                    )
+                }
+            },
+            z: -12,
+            
+            data: site_users
+        }, 
+       ]
+    };
+    // 使用刚指定的配置项和数据显示图表。
+    activationChart.setOption(option6)
+    </script>
+    
+    
+    
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        
+        var paidorder_deviceChart = echarts.init(document.getElementById("paidorder_device"),'shine');
+        // 指定图表的配置项和数据
+        var site_paid_order_dataset = JSON.parse('{{site_paid_order_dataset|tojson|safe}}')
+        var option7 =  {
+            title: {
+            text: '各设备支付成功订单',
+            x: 'center',
+            y: 0,
+            
+        },
+        legend: {top:'10%'},
+        tooltip: {
+            trigger: 'axis',
+            showContent: true
+        },
+        dataset: [
+            {source:site_paid_order_dataset}
+        ],
+    
+        xAxis: [
+            {type: 'category',
+            axisLabel:{
+                rotate:-45
+            }},
+            
+        
+        ],
+        yAxis: {},
+        series: [
+            // These series are in the first grid.
+            {type: 'bar', seriesLayoutBy: 'column'},
+            {type: 'bar', seriesLayoutBy: 'column'},
+            {type: 'bar', seriesLayoutBy: 'column'}
+    
+        ],
+        
+    };
+    paidorder_deviceChart.setOption(option7)
+    </script>
+    
+    
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        
+        var rate_deviceChart = echarts.init(document.getElementById("rate_device"),'shine');
+        // 指定图表的配置项和数据
+        var site_rate_dataset = JSON.parse('{{site_rate_dataset|tojson|safe}}')
+        var option8 =  {
+            title: {
+            text: '各设备支付成功率',
+
+            x: 'center',
+            y: 0,
+            
+        },
+        legend: {top:'10%'},
+        tooltip: {
+            trigger: 'axis',
+            showContent: true
+        },
+        dataset: [
+            {source:site_rate_dataset}
+        ],
+    
+        xAxis: [
+            {type: 'category',
+            axisLabel:{
+                rotate:-45
+            }}
+        
+        ],
+        yAxis: {},
+        series: [
+            // These series are in the first grid.
+            {type: 'bar', seriesLayoutBy: 'column'},
+            {type: 'bar', seriesLayoutBy: 'column'},
+            {type: 'bar', seriesLayoutBy: 'column'}
+    
+        ],
+         
+    };
+    rate_deviceChart.setOption(option8)
+    </script>
+    
+    <table class="abc" border="1" style="width: 1200px; height: 500px;margin: 0 auto;" cellspacing="0">
+            <tr>
+                <th>月份</th>
+                <th>访问人数</th>
+                <td>总订单</td>
+                <td>支付成功订单</td>
+                <td>转化率</td>
+            </tr>
+            <!-- <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr> -->
+            
+            </table>
+            
+            <script src="{{url_for('static', filename='jquery-3.1.1.js')}}"></script>
+            <script >
+            $(function(){
+                var str = ''
+                var site_convert_month = {{site_convert_month|safe}}
+                var site_visitor_list = {{site_visitor_list}}
+                var site_order_list = {{site_order_list}}
+                var site_paid_order_list = {{site_paid_order_list}}
+                var site_convert_rate_list = {{site_convert_rate_list|safe}}
+                
+                console.log(str);
+                console.log(site_convert_month);
+                console.log(site_visitor_list);
+                console.log(site_order_list);
+                console.log(site_paid_order_list);
+                console.log(site_convert_rate_list);
+                
+                for (var i = 0; i < site_convert_month.length; i++) {
+                    console.log(i);
+                    console.log(site_convert_month[i]);
+                    console.log(site_visitor_list[i]);
+                    console.log(site_order_list[i]);
+                    console.log(site_paid_order_list[i]);
+                    console.log(site_convert_rate_list[i]);
+                    str += '<tr>'+
+                    '        <td>' + site_convert_month[i] + '</td>'+
+                    '        <td>' + site_visitor_list[i] + '</td>'+
+                    '        <td>' + site_order_list[i] + '</td>'+
+                    '        <td>' + site_paid_order_list[i] + '</td>'+
+                    '        <td>' + site_convert_rate_list[i] + '</td>'+
+                    '       </tr>';
+                }
+                console.log(str);
+                $('.abc').append(str);
+            })
+                
+            </script>
+
+    {% endblock %}
