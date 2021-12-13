@@ -64,7 +64,7 @@ lesscpy==0.13.0
 libarchive-c==2.8
 llvmlite==0.28.0
 locket==0.2.0
-lxml==4.3.2
+lxml==4.6.5
 Mako==1.1.0
 MarkupSafe==1.1.1
 mccabe==0.6.1
